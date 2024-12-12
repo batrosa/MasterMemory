@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memory Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        .label {
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .input {
+            font-size: 20px;
+            width: 300px;
+            padding: 10px;
+            margin: 10px auto;
+        }
+        .button {
+            font-size: 20px;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007aff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #005bb5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="level" class="label">Уровень: 1</div>
+        <div id="record" class="label">Рекорд: 0</div>
+        <div id="label" class="label">Нажмите "Начать игру"</div>
+        <input id="input" class="input" type="text" placeholder="Введите числа через пробел" disabled>
+        <br>
+        <button id="button" class="button">Начать игру</button>
+    </div>
+
+    <script>
+        // Инициализация переменных
+        let level = 1;
+        let record = 0;
+        let sequence = [];
+
+        // Получение элементов DOM
+        const levelLabel = document.getElementById("level");
+        const recordLabel = document.getElementById("record");
+        const label = document.getElementById("label");
+        const input = document.getElementById("input");
+        const button = document.getElementById("button");
+
+        // Функция для обновления текста
+        function updateText(element, text) {
+            element.textContent = text;
+        }
+
+        // Начало игры
+        function startGame() {
+            level = 1;
+            record = Math.max(record, level);
+            updateText(levelLabel, `Уровень: ${level}`);
+            updateText(recordLabel, `Рекорд: ${record}`);
+            nextLevel();
+        }
+
+        // Переход на следующий уровень
+        function nextLevel() {
+            const numDigits = level === 1 ? 2 : level === 2 ? 3 : level <= 10 ? 4 : 5;
+            sequence = Array.from({ length: numDigits }, () => Math.floor(Math.random() * 100) + 1);
+            updateText(label, "Запоминайте...");
+            input.value = "";
+            input.disabled = true;
+            button.style.display = "none";
+
+            setTimeout(() => showSequence(), 1000);
+        }
+
+        // Показ последовательности
+        function showSequence() {
+            updateText(label, sequence.join(" "));
+            const displayTime = level <= 10 ? 1600 : 2000;
+
+            setTimeout(() => askForInput(), displayTime);
+        }
+
+        // Запрос ввода пользователя
+        function askForInput() {
+            updateText(label, "Введите числа через пробел:");
+            input.disabled = false;
+            input.focus();
+            button.style.display = "inline";
+            button.textContent = "Проверить";
+            button.onclick = checkInput;
+        }
+
+        // Проверка ввода пользователя
+        function checkInput() {
+            const userInput = input.value.trim();
+            const userSequence = userInput.split(" ").map(Number);
+
+            if (JSON.stringify(userSequence) === JSON.stringify(sequence)) {
+                record = Math.max(record, level);
+                level += 1;
+                updateText(levelLabel, `Уровень: ${level}`);
+                updateText(recordLabel, `Рекорд: ${record}`);
+                updateText(label, "Правильно! Переход на следующий уровень.");
+                button.textContent = "Продолжить";
+                button.onclick = nextLevel;
+            } else {
+                updateText(label, `Неверно! Последовательность была: ${sequence.join(" ")}. Ваш рекорд: ${record} уровень.`);
+                button.textContent = "Играть снова";
+                button.onclick = startGame;
+            }
+        }
+
+        // Привязка начальной кнопки
+        button.onclick = startGame;
+    </script>
+</body>
+</html>
